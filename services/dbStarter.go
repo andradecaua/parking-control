@@ -24,7 +24,7 @@ type Vaga struct {
 
 // gorm.Model definition
 type Admins struct {
-	ID    uint   `gorm:"primarykey;autoIncrement"`
+	ID    int    `gorm:"primarykey;autoIncrement"`
 	Nome  string `gorm:"not null;size:40"`
 	Token string `gorm:"not null;size:255;unique"`
 	Valid bool   `gorm:"not null;default:false"`
