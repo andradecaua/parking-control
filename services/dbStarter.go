@@ -2,6 +2,7 @@ package services
 
 import (
 	"log"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -28,6 +29,14 @@ type Admins struct {
 	Nome  string `gorm:"not null;size:40"`
 	Token string `gorm:"not null;size:255;unique"`
 	Valid bool   `gorm:"not null;default:false"`
+}
+
+// gorm.Model definition
+type Historys struct {
+	ID        uint `gorm:"primarykey;unqiue;autoIncrement"`
+	Placa     string
+	Price     string
+	CreatedAt time.Time
 }
 
 var Db *gorm.DB
