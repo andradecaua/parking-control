@@ -105,7 +105,9 @@ func desocuparVaga(id uint, res http.ResponseWriter, placa string) {
 		if vaga.ID >= 1 {
 			if !vaga.Disponivel {
 				if vaga.Placa == placa {
+					var historico services.Historys = services.Historys{Placa: placa, Price: vaga.Price}
 					services.Db.Model(&vaga).Where(vaga.ID).Updates(map[string]interface{}{"placa": "", "disponivel": true})
+					services.Db.Model(&services.Historys{}).Create(&historico)
 					if vaga.Disponivel {
 						res.WriteHeader(201)
 						res.Header().Set("Content-Type", "application/json")
