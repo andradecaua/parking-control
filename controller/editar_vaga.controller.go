@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"parking-control/middleware"
 	"parking-control/services"
+	"strings"
 )
 
 type ConfigEditaVaga struct {
@@ -40,9 +41,9 @@ func EditarVaga(res http.ResponseWriter, req *http.Request) {
 						} else {
 							switch configEdit.TypeEdit {
 							case "ocupar":
-								ocuparVaga(configEdit.Id, res, configEdit.Placa, configEdit.Responsavel)
+								ocuparVaga(configEdit.Id, res, strings.ToUpper(configEdit.Placa), configEdit.Responsavel)
 							case "desocupar":
-								desocuparVaga(configEdit.Id, res, configEdit.Placa)
+								desocuparVaga(configEdit.Id, res, strings.ToUpper(configEdit.Placa))
 							default:
 								res.WriteHeader(400)
 								res.Header().Set("Content-Type", "application/json")
@@ -64,30 +65,38 @@ func EditarVaga(res http.ResponseWriter, req *http.Request) {
 func ocuparVaga(id uint, res http.ResponseWriter, placa, responsavel string) {
 	var carro services.Carro
 	var vaga services.Vaga
+	var placaExist int64
 	carro.Placa = placa
 	carro.Responsavel = responsavel
 	services.Db.Table("vagas").First(&vaga, id)
 
 	if middleware.PlacaVerify(placa, res) {
 		if vaga.ID >= 1 {
-			if vaga.Disponivel {
+			services.Db.Model(services.Vaga{}).Where(fmt.Sprintf(`placa like '%s'`, placa)).Count(&placaExist)
+			if placaExist == 0 {
+				if vaga.Disponivel {
 
-				services.Db.Table("carros").Where(fmt.Sprintf("placa like '%s'", carro.Placa)).FirstOrCreate(&carro)
-				services.Db.Model(&vaga).Where(vaga.ID).Updates(map[string]interface{}{"placa": carro.Placa, "disponivel": false})
-				services.Db.Table("vagas").First(&vaga, vaga.ID)
-				if vaga.Placa == placa {
-					res.WriteHeader(201)
-					res.Header().Set("Content-Type", "application/json")
-					res.Write([]byte(`{"message": "Vaga editada com sucesso!"}`))
+					services.Db.Table("carros").Where(fmt.Sprintf("placa like '%s'", carro.Placa)).FirstOrCreate(&carro)
+					services.Db.Model(&vaga).Where(vaga.ID).Updates(map[string]interface{}{"placa": strings.ToUpper(carro.Placa), "disponivel": false})
+					services.Db.Table("vagas").First(&vaga, vaga.ID)
+					if vaga.Placa == placa {
+						res.WriteHeader(201)
+						res.Header().Set("Content-Type", "application/json")
+						res.Write([]byte(`{"message": "Vaga editada com sucesso!"}`))
+					} else {
+						res.WriteHeader(500)
+						res.Header().Set("Content-Type", "application/json")
+						res.Write([]byte(`{"message": "Ouve um erro interno, por gentileza contatar o suporte"}`))
+					}
 				} else {
-					res.WriteHeader(500)
+					res.WriteHeader(400)
 					res.Header().Set("Content-Type", "application/json")
-					res.Write([]byte(`{"message": "Ouve um erro interno, por gentileza contatar o suporte"}`))
+					res.Write([]byte(`{"message": "Essa vaga já está ocupada"}`))
 				}
 			} else {
 				res.WriteHeader(400)
 				res.Header().Set("Content-Type", "application/json")
-				res.Write([]byte(`{"message": "Essa vaga já está ocupada"}`))
+				res.Write([]byte(`{"message": "Essa placa já está ocupando uma vaga"}`))
 			}
 		} else {
 			res.WriteHeader(400)
@@ -106,7 +115,7 @@ func desocuparVaga(id uint, res http.ResponseWriter, placa string) {
 			if !vaga.Disponivel {
 				if vaga.Placa == placa {
 					var historico services.Historys = services.Historys{Placa: placa, Price: vaga.Price}
-					services.Db.Model(&vaga).Where(vaga.ID).Updates(map[string]interface{}{"placa": "", "disponivel": true})
+					services.Db.Model(&vaga).Where(vaga.ID).Updates(map[string]interface{}{"placa": nil, "disponivel": true})
 					services.Db.Model(&services.Historys{}).Create(&historico)
 					if vaga.Disponivel {
 						res.WriteHeader(201)

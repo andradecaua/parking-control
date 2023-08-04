@@ -12,7 +12,7 @@ var vagas []services.Vaga
 
 // VerVagas é uma rota get para poder conseguir ver as vagas que temos disponivél no estacionamento
 func VerVagas(res http.ResponseWriter, req *http.Request) {
-	var token string = req.URL.Query().Get("token")
+	var token string = req.Header.Get("Authorization")
 	if middleware.VerifyExpectedMethod(res, "get", req.Method) {
 		if middleware.VerifyAdmin(token, res) {
 			services.Db.Table("vagas").Find(&vagas)

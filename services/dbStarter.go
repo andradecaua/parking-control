@@ -21,6 +21,7 @@ type Vaga struct {
 	Placa      string `gorm:"unique;foreignkey:placa;references:carro"`
 	Disponivel bool
 	Price      float64
+	Apelido    string    `gorm:"unique"`
 	CreatedAt  time.Time `gorm:"autoCreateTime"`
 	UpdatedAt  time.Time `gorm:"autoCreateTime"`
 }
