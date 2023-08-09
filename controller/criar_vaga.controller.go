@@ -9,8 +9,10 @@ import (
 )
 
 type Vaga struct {
+	ID         uint    `json:"id_vaga"`
 	Disponivel bool    `json:"disponivel"`
 	Price      float64 `json:"price"`
+	Placa      string  `json:"placa"`
 }
 
 // CriarVaga serve para podermos criar uma vaga no estacionamento
@@ -24,8 +26,6 @@ func CriarVaga(res http.ResponseWriter, req *http.Request) {
 			if middleware.VerifyAdmin(token, res) {
 
 				body, err := io.ReadAll(req.Body)
-
-				req.Body.Close()
 				if err != nil {
 					res.WriteHeader(500)
 					res.Header().Set("Content-Type", "application/json")
