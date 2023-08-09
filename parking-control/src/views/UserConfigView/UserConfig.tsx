@@ -22,10 +22,10 @@ function UserConfig(){
     function saveConfig(){
         let getActualConfig = localStorage.getItem('config')
         if(getActualConfig == null){
-            localStorage.setItem('config', new Object(configData).toString())
+            localStorage.setItem('config', JSON.stringify(configData))
         }else{
             localStorage.removeItem('config')
-            localStorage.setItem('config', new Object(configData).toString())
+            localStorage.setItem('config', JSON.stringify(configData))
         }
     }
 

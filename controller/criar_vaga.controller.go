@@ -9,22 +9,23 @@ import (
 )
 
 type Vaga struct {
-	ID         uint    `json:"id_vaga"`
 	Disponivel bool    `json:"disponivel"`
 	Price      float64 `json:"price"`
-	Placa      string  `json:"placa"`
+	Apelido    string  `json:"apelido"`
 }
 
 // CriarVaga serve para podermos criar uma vaga no estacionamento
 func CriarVaga(res http.ResponseWriter, req *http.Request) {
 
+	res.Header().Set("Access-Control-Allow-Origin", "*")
+	res.Header().Set("Access-Control-Allow-Methods", "POST")
+	res.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	res.WriteHeader(http.StatusOK)
 	if middleware.VerifyExpectedMethod(res, "post", req.Method) {
 		if middleware.ContentVerify(req.Header.Get("Content-Type"), res) {
 			var vaga Vaga
 			var token string = req.Header.Get("Authorization")
-
 			if middleware.VerifyAdmin(token, res) {
-
 				body, err := io.ReadAll(req.Body)
 				if err != nil {
 					res.WriteHeader(500)
