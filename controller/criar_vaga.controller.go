@@ -32,15 +32,21 @@ func CriarVaga(res http.ResponseWriter, req *http.Request) {
 					res.Write([]byte(`{"message": "Ouve um erro ao tentar ler a requisição"}`))
 				} else {
 					errMarshal := json.Unmarshal(body, &vaga)
-					if errMarshal != nil {
-						res.WriteHeader(500)
-						res.Header().Set("Content-Type", "application/json")
-						res.Write([]byte(`{"message": "Ouve um erro ao transformar o arquivo em JSON"}`))
+					if vaga.Price != 0 && vaga.Price > 0.00 {
+						if errMarshal != nil {
+							res.WriteHeader(500)
+							res.Header().Set("Content-Type", "application/json")
+							res.Write([]byte(`{"message": "Ouve um erro ao transformar o arquivo em JSON"}`))
+						} else {
+							services.Db.Table("vagas").Create(vaga)
+							res.WriteHeader(201)
+							res.Header().Set("Content-Type", "application/json")
+							res.Write([]byte(`{"message": "Vaga criada com sucesso!"}`))
+						}
 					} else {
-						services.Db.Table("vagas").Create(vaga)
-						res.WriteHeader(201)
+						res.WriteHeader(400)
 						res.Header().Set("Content-Type", "application/json")
-						res.Write([]byte(`{"message": "Vaga criada com sucesso!"}`))
+						res.Write([]byte(`{"message": "Por gentileza enviar o preço de forma válida "}`))
 					}
 				}
 			}
